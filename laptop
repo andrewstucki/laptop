@@ -148,6 +148,7 @@ brew "yarn"
 brew "mercurial"
 brew "awscli"
 brew "dockutil"
+brew "magic-wormhole"
 
 # Databases
 brew "postgres", restart_service: true
