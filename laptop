@@ -200,7 +200,7 @@ append_to_zshrc 'export PATH="$PATH:$GOPATH/bin"'
 
 fancy_echo "Installing Atom plugins ..."
 apm install atom-beautify atom-handlebars atom-material-syntax atom-material-ui atom-prettify \
- atom-terminal auto-detect-indentation autoclose-html file-icons go-plus jsformat language-clojure \
+ atom-terminal auto-detect-indentation autoclose-html file-icons go-plus jsformat \
  language-diff language-docker language-gradle language-haml language-hcl language-jade \
  language-javascript-jsx language-jsx language-protobuf language-rust language-x86 pretty-json xml-formatter
 
