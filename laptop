@@ -149,6 +149,7 @@ brew "mercurial"
 brew "awscli"
 brew "dockutil"
 brew "magic-wormhole"
+brew "ngrep"
 
 # Databases
 brew "postgres", restart_service: true
@@ -166,6 +167,7 @@ cask "google-chrome"
 cask "firefox"
 cask "dropbox"
 cask "slack"
+cask "caffeine"
 EOF
 
 fancy_echo "Configuring Ruby ..."
@@ -200,15 +202,70 @@ append_to_zshrc 'export GOPATH="$HOME/Code/go"'
 append_to_zshrc 'export PATH="$PATH:$GOPATH/bin"'
 
 fancy_echo "Installing Atom plugins ..."
-apm install atom-beautify atom-handlebars atom-material-syntax atom-material-ui atom-prettify \
+apm install atom-handlebars atom-material-syntax atom-material-ui atom-prettify \
  atom-terminal auto-detect-indentation autoclose-html file-icons go-plus jsformat \
  language-diff language-docker language-gradle language-haml language-hcl language-jade \
- language-javascript-jsx language-jsx language-protobuf language-rust language-x86 pretty-json xml-formatter
+ language-javascript-jsx language-protobuf language-rust language-x86 pretty-json xml-formatter
 
-dockutil --add "/Applications/Atom.app"
-dockutil --add "/Applications/Xcode.app"
-dockutil --add "/Applications/Spotify.app"
-dockutil --add "/Applications/Google Chrome.app"
-dockutil --add "/Applications/iTerm.app"
-dockutil --add "/Applications/Slack.app"
-dockutil --add "/Applications/Virtualbox.app"
+mkdir -p "$HOME/.atom"
+cat <<EOF > "$HOME/.atom/config.cson"
+"*":
+  core:
+    disabledPackages: []
+    projectHome: "$HOME/Code"
+    telemetryConsent: "no"
+    themes: [
+      "atom-material-ui"
+      "atom-material-syntax"
+    ]
+  editor:
+    invisibles: {}
+    preferredLineLength: 120
+    tabType: "soft"
+  "exception-reporting":
+    userId: "f028ebc3-e12f-0768-8bf7-2f5b5bb0cc22"
+  "go-plus":
+    syntaxCheckOnSave: false
+  jsformat:
+    format_on_save: false
+  linter: {}
+  "tree-view": {}
+  welcome:
+    showOnStartup: false
+EOF
+
+fancy_echo "Setting up Dock shortcuts ..."
+dockutil --no-restart --remove all
+dockutil --no-restart --add "/Applications/Atom.app"
+dockutil --no-restart --add "/Applications/Xcode.app"
+dockutil --no-restart --add "/Applications/Spotify.app"
+dockutil --no-restart --add "/Applications/Google Chrome.app"
+dockutil --no-restart --add "/Applications/iTerm.app"
+dockutil --no-restart --add "/Applications/Slack.app"
+dockutil --no-restart --add "/Applications/Spark.app"
+dockutil --no-restart --add "/Applications/Virtualbox.app"
+dockutil --no-restart --add "/Applications/Utilities/Activity Monitor.app"
+dockutil --add "/Applications/Calendar.app"
+
+fancy_echo "Setting up terminal aliases and Mac defaults ..."
+# shellcheck disable=SC2016
+append_to_zshrc 'alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"'
+# shellcheck disable=SC2016
+append_to_zshrc "alias sniff=\"sudo ngrep -d 'en0' -t '^(GET|POST) ' 'tcp and port 80'\""
+
+sudo tmutil disablelocal
+sudo scutil --set ComputerName "Laptop"
+sudo scutil --set LocalHostName "Laptop"
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 0
+defaults write com.apple.screencapture location -string "$HOME/Desktop"
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+defaults write com.apple.ActivityMonitor ShowCategory -int 0
+chflags nohidden ~/Library
+
+curl -o /etc/hosts https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
