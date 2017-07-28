@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Welcome to the thoughtbot laptop script!
+# Welcome to the andrew's laptop script!
 # Be prepared to turn your laptop (or desktop, no haters here)
 # into an awesome development machine.
 
@@ -92,8 +92,7 @@ gem_install_or_update() {
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
-    curl -fsS \
-      'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
+    curl -fsS 'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
 
     append_to_zshrc '# recommended by brew doctor'
 
@@ -103,57 +102,68 @@ if ! command -v brew >/dev/null; then
     export PATH="/usr/local/bin:$PATH"
 fi
 
-if brew list | grep -Fq brew-cask; then
-  fancy_echo "Uninstalling old Homebrew-Cask ..."
-  brew uninstall --force brew-cask
-fi
-
 fancy_echo "Updating Homebrew formulae ..."
 brew update
 brew bundle --file=- <<EOF
-tap "thoughtbot/formulae"
+cask_args appdir: "/Applications"
+
+tap "caskroom/cask"
 tap "homebrew/services"
 
-# Unix
-brew "ctags"
+brew "rbenv"
+brew "keybase"
+brew "msgpack"
+brew "ripgrep"
+brew "gcc"
+brew "nasm"
+brew "automake"
+brew "ruby-build"
+brew "bazaar"
+brew "bazel"
+brew "bison"
+brew "node"
 brew "git"
 brew "openssl"
-brew "rcm"
-brew "reattach-to-user-namespace"
+brew "cfssl"
+brew "tcpdump"
+brew "terraform"
 brew "the_silver_searcher"
-brew "tmux"
+brew "parallel"
+brew "go"
+brew "pdsh"
+brew "cmake"
+brew "gradle"
+brew "llvm"
+brew "protobuf"
+brew "protobuf-c"
+brew "xz"
+brew "youtube-dl"
+brew "qemu"
+brew "maven"
+brew "kafka"
+brew "zookeeper"
+brew "qt5"
 brew "vim"
-brew "watchman"
-brew "zsh"
-
-# Heroku
-brew "heroku-toolbelt"
-brew "parity"
-
-# GitHub
-brew "hub"
-
-# Image manipulation
-brew "imagemagick"
-
-# Testing
-brew "qt@5.5"
-
-# Programming languages and package managers
-brew "libyaml" # should come after openssl
-brew "node"
-brew "rbenv"
-brew "ruby-build"
 brew "yarn"
+brew "mercurial"
+brew "awscli"
 
 # Databases
 brew "postgres", restart_service: true
 brew "redis", restart_service: true
-EOF
 
-fancy_echo "Symlink qmake binary to /usr/local/bin for Capybara Webkit..."
-brew unlink qt@5.5
-brew link --force qt@5.5
+cask "atom"
+cask "ngrok"
+cask "vagrant"
+cask "vlc"
+cask "spotify"
+cask "virtualbox"
+cask "wkhtmltopdf"
+cask "iterm2"
+cask "google-chrome"
+cask "firefox"
+cask "dropbox"
+EOF
 
 fancy_echo "Configuring Ruby ..."
 find_latest_ruby() {
@@ -176,8 +186,18 @@ gem_install_or_update 'bundler'
 number_of_cores=$(sysctl -n hw.ncpu)
 bundle config --global jobs $((number_of_cores - 1))
 
-if [ -f "$HOME/.laptop.local" ]; then
-  fancy_echo "Running your customizations from ~/.laptop.local ..."
-  # shellcheck disable=SC1090
-  . "$HOME/.laptop.local"
-fi
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+append_to_zshrc '# Golang settings'
+
+mkdir -p "$HOME/Code/go"
+# shellcheck disable=SC2016
+append_to_zshrc 'export GOPATH="$HOME/Code/go"'
+# shellcheck disable=SC2016
+append_to_zshrc 'export PATH="$PATH:$GOPATH/bin"'
+
+fancy_echo "Installing Atom plugins ..."
+apm install atom-beautify atom-handlebars atom-material-syntax atom-material-ui atom-prettify \
+ atom-terminal auto-detect-indentation autoclose-html file-icons go-plus jsformat language-clojure \
+ language-diff language-docker language-gradle language-haml language-hcl language-jade \
+ language-javascript-jsx language-jsx language-protobuf language-rust language-x86 pretty-json xml-formatter
