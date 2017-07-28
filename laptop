@@ -260,6 +260,7 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
 defaults write com.apple.ActivityMonitor ShowCategory -int 0
+defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 chflags nohidden ~/Library
 
 curl -o /etc/hosts https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts
