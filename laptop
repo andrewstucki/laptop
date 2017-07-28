@@ -248,10 +248,6 @@ dockutil --no-restart --add "/Applications/Utilities/Activity Monitor.app"
 dockutil --add "/Applications/Calendar.app"
 
 fancy_echo "Setting up terminal aliases and Mac defaults ..."
-# shellcheck disable=SC2016
-append_to_zshrc 'alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"'
-# shellcheck disable=SC2016
-append_to_zshrc "alias sniff=\"sudo ngrep -d 'en0' -t '^(GET|POST) ' 'tcp and port 80'\""
 
 sudo tmutil disablelocal
 sudo scutil --set ComputerName "Laptop"
