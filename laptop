@@ -168,6 +168,8 @@ cask "firefox"
 cask "dropbox"
 cask "slack"
 cask "caffeine"
+cask "tunnelblick"
+cask "gpgtools"
 EOF
 
 fancy_echo "Configuring Ruby ..."
