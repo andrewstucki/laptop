@@ -111,7 +111,6 @@ tap "caskroom/cask"
 tap "homebrew/services"
 
 brew "rbenv"
-brew "keybase"
 brew "msgpack"
 brew "ripgrep"
 brew "gcc"
@@ -170,6 +169,7 @@ cask "slack"
 cask "caffeine"
 cask "tunnelblick"
 cask "gpgtools"
+cask "keybase"
 EOF
 
 fancy_echo "Configuring Ruby ..."
