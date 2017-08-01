@@ -170,7 +170,7 @@ cask "slack"
 cask "caffeine"
 cask "tunnelblick"
 cask "gpgtools"
-cask "keybase"
+cask "docker"
 EOF
 
 fancy_echo "Configuring Ruby ..."
