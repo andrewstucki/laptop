@@ -266,6 +266,6 @@ defaults write com.apple.ActivityMonitor ShowCategory -int 0
 defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 chflags nohidden ~/Library
 
-curl -o /etc/hosts https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts
+sudo curl -o /etc/hosts https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts
 sudo dscacheutil -flushcache
 sudo killall -HUP mDNSResponder
