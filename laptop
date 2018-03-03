@@ -157,6 +157,8 @@ brew "dockutil"
 brew "oath-toolkit"
 brew "packer"
 brew "tree"
+brew "elixir"
+brew "elm"
 
 # Databases
 brew "postgres", restart_service: true
