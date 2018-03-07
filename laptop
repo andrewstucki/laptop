@@ -159,6 +159,8 @@ brew "packer"
 brew "tree"
 brew "elixir"
 brew "elm"
+brew "caddy"
+brew "dnsmasq"
 
 # Databases
 brew "postgres", restart_service: true
@@ -250,6 +252,139 @@ cat <<EOF > "$HOME/.atom/config.cson"
   welcome:
     showOnStartup: false
 EOF
+
+fancy_echo "Setting up dnsmasq"
+
+[ -d /etc/resolver ] || sudo mkdir -v /etc/resolver
+sudo bash -c 'echo "domain laptop.local" > /etc/resolver/laptop.local'
+sudo bash -c 'echo "nameserver 127.0.0.1" >> /etc/resolver/laptop.local'
+
+sudo mkdir -p $(brew --prefix)/etc/
+cat > $(brew --prefix)/etc/dnsmasq.conf <<-EOF
+listen-address=127.0.0.1
+address=/.laptop.local/127.0.0.1
+# keep nameserver order of resolv.conf
+strict-order
+EOF
+
+sudo cp -v $(brew --prefix dnsmasq)/homebrew.mxcl.dnsmasq.plist /Library/LaunchDaemons
+sudo launchctl load -w /Library/LaunchDaemons/homebrew.mxcl.dnsmasq.plist
+
+sudo mkdir -p /etc/caddy /etc/ssl/caddy /var/log/caddy /usr/local/bin
+
+sudo tee /etc/caddy/Caddyfile <<EOF
+localhost:80, localhost:443, *.laptop.local:80, *.laptop.local:443 {
+  bind 127.0.0.1
+  proxy / localhost:8080
+
+  tls self_signed
+}
+EOF
+
+sudo tee /Library/LaunchDaemons/caddy.dev.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>Caddy</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/caddy</string>
+		<string>-agree</string>
+		<string>-conf</string>
+		<string>/etc/caddy/Caddyfile</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>CADDYPATH</key>
+		<string>/etc/ssl/caddy</string>
+	</dict>
+
+	<key>UserName</key>
+	<string>root</string>
+	<key>GroupName</key>
+	<string>wheel</string>
+	<key>InitGroups</key>
+	<true/>
+
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>Crashed</key>
+		<true/>
+	</dict>
+
+	<key>SoftResourceLimits</key>
+	<dict>
+		<key>NumberOfFiles</key>
+		<integer>8192</integer>
+	</dict>
+	<key>HardResourceLimits</key>
+	<dict/>
+
+	<key>WorkingDirectory</key>
+	<string>/etc/ssl/caddy</string>
+
+	<key>StandardErrorPath</key>
+	<string>/var/log/caddy/error.log</string>
+	<key>StandardOutPath</key>
+	<string>/var/log/caddy/info.log</string>
+</dict>
+</plist>
+EOF
+
+sudo chown root:wheel /Library/LaunchDaemons/caddy.dev.plist
+sudo launchctl load -w /Library/LaunchDaemons/caddy.dev.plist
+
+mkdir -p "$HOME/.traefik"
+tee "$HOME/.traefik/docker-compose.yml" <<EOF
+version: '2'
+
+services:
+  traefik:
+    image: traefik:1.5.3-alpine
+    restart: always
+    ports:
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+    container_name: traefik
+
+networks:
+  web:
+EOF
+
+tee "$HOME/.traefik/docker-compose.yml" <<EOF
+logLevel = "ERROR"
+defaultEntryPoints = ["http"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":8080"
+  [entryPoints.ui]
+  address = ":8081"
+
+[retry]
+
+[api]
+entryPoint = "ui"
+dashboard = true
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "laptop.local"
+watch = true
+exposedbydefault = false
+EOF
+
+append_to_zshrc 'alias proxy="docker-compose -f \"$HOME/.traefik/docker-compose.yml\" up -d"'
+append_to_zshrc 'alias unproxy="docker-compose -f \"$HOME/.traefik/docker-compose.yml\" stop"'
 
 fancy_echo "Setting up Dock shortcuts ..."
 dockutil --no-restart --remove all
